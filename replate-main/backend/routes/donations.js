@@ -9,12 +9,12 @@ router.get("/", async (req, res) => {
   try {
     const donations = await donationRepository.findAvailable();
 
-  return res.json(donations);
+    return res.json(donations);
   } catch (error) {
-/* Error - unable to retrieve donations */
+    /* Error - unable to retrieve donations */
     console.error("GET /api/donations failed:", error);
 
-   return res.status(500).json({
+    return res.status(500).json({
       error: "Unable to retrieve donations."
     });
   }
@@ -22,7 +22,6 @@ router.get("/", async (req, res) => {
 
 /* POST /api/donations
  * Creates a new food donation.*/
-
 router.post("/", async (req, res) => {
   try {
     const {
@@ -87,12 +86,12 @@ router.post("/", async (req, res) => {
       additional_information
     });
 
-  return res.status(201).json({
+    return res.status(201).json({
       message: "Donation posted successfully.",
       donation_id: donationId
     });
   } catch (error) {
-/*Error - Unable to save donation*/
+    /* Error - Unable to save donation */
     console.error("POST /api/donations failed:", error);
 
     return res.status(500).json({
@@ -102,29 +101,29 @@ router.post("/", async (req, res) => {
 });
 
 // Update Existing Donation Listing
-router.put("/api/donations/:id", async (req, res) => {
+router.put("/:id", async (req, res) => {
   try {
-  const donationId = req.params.id;
-  const {
-    food_type,
-    quantity,
-    quantity_unit,
-    pickup_address,
-    pickup_date,
-    pickup_time,
-    claim_deadline,
-    additional_information,
-    status
-  } = req.body;
+    const donationId = req.params.id;
+    const {
+      food_type,
+      quantity,
+      quantity_unit,
+      pickup_address,
+      pickup_date,
+      pickup_time,
+      claim_deadline,
+      additional_information,
+      status
+    } = req.body;
 
-    const updates = {};`
+    const updates = {};
 
     if (food_type !== undefined) {
-    updates.food_type = food_type;
+      updates.food_type = food_type;
     }
     if (quantity !== undefined) {
       const numericQuantity = Number(quantity);
-    if (!Number.isFinite(numericQuantity) || numericQuantity <= 0) {
+      if (!Number.isFinite(numericQuantity) || numericQuantity <= 0) {
         return res.status(400).json({
           error: "Quantity must be a positive number."
         });
@@ -134,21 +133,21 @@ router.put("/api/donations/:id", async (req, res) => {
     }
 
     if (quantity_unit !== undefined) {
-    updates.quantity_unit = quantity_unit;
+      updates.quantity_unit = quantity_unit;
     }
-    if (pickup_address !== undefined) { 
-    updates.pickup_address = pickup_address;
+    if (pickup_address !== undefined) {
+      updates.pickup_address = pickup_address;
     }
     if (pickup_date !== undefined) {
-    updates.pickup_date = pickup_date;
+      updates.pickup_date = pickup_date;
     }
     if (pickup_time !== undefined) {
       updates.pickup_time = pickup_time;
     }
     if (claim_deadline !== undefined) {
       const deadline = new Date(claim_deadline);
-  
-    if (Number.isNaN(deadline.getTime()) || deadline <= new Date()) {
+
+      if (Number.isNaN(deadline.getTime()) || deadline <= new Date()) {
         return res.status(400).json({
           error: "Claim deadline must be in the future."
         });
@@ -161,30 +160,26 @@ router.put("/api/donations/:id", async (req, res) => {
       updates.additional_information = additional_information;
     }
 
-    if (status !== undefined){
-      const vaidStatuses = [
-                "AVAILABLE", 
-                "CLAIMED", 
-                "COMPLETED"
-                ];
-    if (!validStatuses.includes(status)){
-    return res.status(400).json({
-      error:"Status must be one of AVAILABLE, CLAIMED, or COMPLETED."
-      });
+    if (status !== undefined) {
+      const validStatuses = ["AVAILABLE", "CLAIMED", "COMPLETED"];
+
+      if (!validStatuses.includes(status)) {
+        return res.status(400).json({
+          error: "Status must be one of AVAILABLE, CLAIMED, or COMPLETED."
+        });
       }
+
       updates.status = status;
-      }
-      
+    }
+
     // Do not run an empty update.
     if (Object.keys(updates).length === 0) {
       return res.status(400).json({
         error: "No fields were provided to update."
       });
-     } 
-    const result = await donationRepository.updateDonation(
-      donationId,
-      updates
-    );
+    }
+
+    const result = await donationRepository.updateDonation(donationId, updates);
 
     if (result === 0) {
       return res.status(404).json({
@@ -192,7 +187,7 @@ router.put("/api/donations/:id", async (req, res) => {
       });
     }
 
-   return res.json({
+    return res.json({
       message: "Donation listing updated successfully."
     });
   } catch (error) {
@@ -205,8 +200,7 @@ router.put("/api/donations/:id", async (req, res) => {
 });
 
 // Delete Existing Donation Listing
-router.delete("api/donations/:id", async (req, res) => {
-
+router.delete("/:id", async (req, res) => {
   try {
     const result = await donationRepository.deleteDonation(req.params.id);
 
@@ -222,10 +216,10 @@ router.delete("api/donations/:id", async (req, res) => {
   } catch (error) {
     console.error("DELETE /api/donations/:id failed:", error);
 
-   return res.status(500).json({
+    return res.status(500).json({
       error: "Database server error."
     });
   }
-  });
-module.exports = router;
+});
 
+module.exports = router;
